@@ -1,0 +1,96 @@
+<!doctype html>
+<meta charset="UTF-8">
+<title>Hello, Universe!</title>
+<style>body{background:#000;margin:0;padding:0;overflow:hidden}</style>
+<canvas id="starfield" width="640" height="480"></canvas>
+<script>
+function Starfield(id, fullscreen) {
+    var starfield = {
+        canvas: document.getElementById(id),
+        context: null,
+
+        stars: [],
+        stars_density: 2000,
+        stars_largest: 4,
+        stars_speed: 0.01,
+        stars_style: '#FFF',
+
+        move: function (star, depth) {
+            this.stars[star] = {
+                x: Math.random() - 0.5,
+                y: Math.random() - 0.5,
+                z: depth || 1
+            };
+        },
+
+        draw: function () {
+            var x, y;
+            this.canvas.width = this.canvas.width;
+
+            for (var star = 0; star < this.stars_density; star++) {
+                if (!this.stars[star]) {
+                    starfield.move(star, Math.random());
+                }
+
+                this.stars[star].z -= this.stars_speed;
+
+                if (this.stars[star].z < 0) {
+                    this.move(star);
+                }
+
+                this.context.beginPath();
+                this.context.arc(
+                    this.stars[star].x / this.stars[star].z *
+                        this.canvas.width + (this.canvas.width / 2),
+                    this.stars[star].y / this.stars[star].z *
+                        this.canvas.height + (this.canvas.height / 2),
+                    (1 - this.stars[star].z) * this.stars_largest,
+                    0, Math.PI * 2, false
+                );
+
+                this.context.fillStyle = this.stars_style;
+                this.context.fill();
+            }
+        },
+
+        resize: function () {
+            this.canvas.width  = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+            return this.resize;
+        }
+    };
+
+    if (fullscreen) {
+        window.onresize = function () {
+            starfield.canvas.width  = window.innerWidth;
+            starfield.canvas.height = window.innerHeight;
+        };
+
+        window.onresize();
+    }
+
+    starfield.context = starfield.canvas.getContext('2d');
+
+    if (!starfield.context) {
+        return {};
+    }
+
+    var animate = window.requestAnimationFrame
+     || window.webkitRequestAnimationFrame
+     || window.mozRequestAnimationFrame
+     || window.oRequestAnimationFrame
+     || window.msRequestAnimationFrame
+     || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+
+    (function loop() {
+        starfield.draw();
+        animate(loop);
+    })();
+
+    return starfield;
+}
+
+Starfield('starfield', true);
+</script>
